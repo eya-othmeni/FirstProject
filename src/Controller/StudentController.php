@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Student;
+use App\Form\StudentType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -43,4 +46,35 @@ class StudentController extends AbstractController
         );
         return $this->render('club/list.html.twig',["mesFormations"=>$formations]);
     }
+
+    /**
+     * @Route("/Student/add", name="addstudent")
+     */
+    public function addstudent(Request $request): Response
+    {
+
+        //instancier la classe student
+        $st=new Student();
+        //créer le formulaire
+        $form=$this->createForm(StudentType::class,$st);
+        $form->handleRequest($request);
+        if($form->isSubmitted()){
+            $manager=$this->getDoctrine()->getManager();
+            $manager->persist($st);
+            $manager->flush();
+           return  $this->redirectToRoute("getStudent");
+        }
+        return $this->render('student/add.html.twig',["myForm"=>$form->createView()]
+        );
+    }
+
+    /**
+     * @Route("/Student/get", name="getStudent")
+     */
+    public function getStudent(Request $request):Response
+    {
+        $repo=$this->getDoctrine()->getRepository(Student::class);
+        $st=$repo->findAll();
+        return $this->render('student/liststudent.html.twig',["students"=>$st]);
+      }
 }
